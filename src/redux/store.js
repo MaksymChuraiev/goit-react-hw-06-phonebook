@@ -9,11 +9,11 @@ import {
   REHYDRATE,
 } from 'redux-persist';
 
-import { contactsSlice } from './contactSlice';
+import { contactsReducer } from './contactSlice';
 
 export const store = configureStore({
   reducer: {
-    contacts: contactsSlice.reducer,
+    contacts: contactsReducer,
   },
   middleware(getDefaultMiddleware) {
     return getDefaultMiddleware({
