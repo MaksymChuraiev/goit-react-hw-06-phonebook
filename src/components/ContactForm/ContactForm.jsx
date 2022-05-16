@@ -1,5 +1,8 @@
-import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { nanoid } from 'nanoid';
+import { toast } from 'react-toastify';
+import { createContacts, getContacts } from 'redux/contactSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { useForm } from 'react-hook-form';
 import {
   FormTitle,
   Form,
@@ -8,44 +11,43 @@ import {
   FormButton,
 } from './ContactForm.styled';
 
-export const ContactForm = ({ onSubmit }) => {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
+export const ContactForm = () => {
+  const { register, handleSubmit, resetField } = useForm();
+  const dispatch = useDispatch();
+  const contactItems = useSelector(getContacts);
 
-  const handleInputChange = e => {
-    const { name, value } = e.currentTarget;
+  const onSubmit = data => {
+    const newContact = {
+      id: nanoid(),
+      name: data.name,
+      number: data.number,
+    };
 
-    switch (name) {
-      case 'name':
-        setName(value);
-        break;
-      case 'number':
-        setNumber(value);
-        break;
+    addContact(data, newContact);
 
-      default:
-        return;
-    }
+    resetField('name');
+    resetField('number');
   };
 
-  const handleSubmit = e => {
-    e.preventDefault();
-    onSubmit({ name, number });
-    setName('');
-    setNumber('');
+  const addContact = (data, newContact) => {
+    if (
+      contactItems.some(
+        contact => contact.name.toLowerCase() === data.name.toLowerCase()
+      )
+    ) {
+      return toast.error(`${data.name} is already in contacts.`);
+    }
+    return dispatch(createContacts(newContact));
   };
 
   return (
     <>
       <FormTitle>Phonebook</FormTitle>
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit(onSubmit)}>
         <FormLabel>
           Name
           <FormInput
-            type="text"
-            name="name"
-            value={name}
-            onChange={handleInputChange}
+            {...register('name')}
             pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
             title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
             required
@@ -55,10 +57,7 @@ export const ContactForm = ({ onSubmit }) => {
         <FormLabel>
           Number
           <FormInput
-            name="number"
-            type="tel"
-            value={number}
-            onChange={handleInputChange}
+            {...register('number')}
             pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
             title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
             required
@@ -72,9 +71,75 @@ export const ContactForm = ({ onSubmit }) => {
   );
 };
 
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
+// import { useState } from 'react';
+
+// export const ContactForm = ({ onSubmit }) => {
+//   const [name, setName] = useState('');
+//   const [number, setNumber] = useState('');
+
+//   const handleInputChange = e => {
+//     const { name, value } = e.currentTarget;
+
+//     switch (name) {
+//       case 'name':
+//         setName(value);
+//         break;
+//       case 'number':
+//         setNumber(value);
+//         break;
+
+//       default:
+//         return;
+//     }
+//   };
+
+//   const handleSubmit = e => {
+//     e.preventDefault();
+//     onSubmit({ name, number });
+//     setName('');
+//     setNumber('');
+//   };
+
+//   return (
+//     <>
+//       <FormTitle>Phonebook</FormTitle>
+//       <Form onSubmit={handleSubmit}>
+//         <FormLabel>
+//           Name
+//           <FormInput
+//             type="text"
+//             name="name"
+//             value={name}
+//             onChange={handleInputChange}
+//             pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+//             title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+//             required
+//             autoComplete="off"
+//           />
+//         </FormLabel>
+//         <FormLabel>
+//           Number
+//           <FormInput
+//             name="number"
+//             type="tel"
+//             value={number}
+//             onChange={handleInputChange}
+//             pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+//             title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+//             required
+//             autoComplete="off"
+//           />
+//         </FormLabel>
+
+//         <FormButton type="submit">Add contact</FormButton>
+//       </Form>
+//     </>
+//   );
+// };
+
+// ContactForm.propTypes = {
+//   onSubmit: PropTypes.func.isRequired,
+// };
 
 // import { Component } from 'react';
 // import { Formik, ErrorMessage } from 'formik';
